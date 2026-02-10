@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>募款進度</title>
+
+<style>
+/* ===================== */
+/* 主題色系變數          */
+/* ===================== */
+:root {
+  --bg-dark: #020817;
+  --white: #ffffff;
+  --hud-blue: #00e5ff;
+  --gold: #ffcc00;
+  --panel-bg: rgba(3, 20, 40, 0.9);
+
+  /* 募款進度（可自行修改） */
+  --current: 4751009;
+  --target: 30000000;
+
+  /* 自動計算比例（CSS-only） */
+  --percent: calc(var(--current) / var(--target));
+  --dash: calc(565 * var(--percent));
+}
+
+/* ===================== */
+/* 全域背景與排版        */
+/* ===================== */
+body {
+  background-color: var(--bg-dark);
+  color: var(--white);
+  font-family: 'PingFang TC', 'Heiti TC', sans-serif;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+
+  /* HUD 科技格線背景 */
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.container {
+  width: 100%;
+  max-width: 450px;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* ===================== */
+/* 標題區                */
+/* ===================== */
+h1 {
+  font-size: 1.6rem;
+  letter-spacing: 2px;
+  color: var(--hud-blue);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  margin-bottom: 40px;
+  font-weight: bold;
+}
+
+/* ===================== */
+/* 儀表板區              */
+/* ===================== */
+.gauge-wrapper {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: 0 auto;
+}
+
+.gauge-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gauge-track {
+  fill: none;
+  stroke: #0d2137;
+  stroke-width: 12;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 12;
+  stroke-linecap: round;
+
+  /* 自動計算進度條長度 */
+  stroke-dasharray: var(--dash) 565;
+
+  /* 光流效果 */
+  animation: glow-pulse 2s infinite alternate,
+             flow 4s linear infinite;
+}
+
+@keyframes glow-pulse {
+  from { opacity: 0.8; filter: drop-shadow(0 0 5px var(--gold)); }
+  to   { opacity: 1;   filter: drop-shadow(0 0 15px var(--gold)); }
+}
+
+@keyframes flow {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -200; }
+}
+
+/* 中央數據 */
+.gauge-data {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.current-amount {
+  font-size: 2.4rem;
+  color: var(--gold);
+  font-weight: 900;
+  display: block;
+  text-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--white);
+  opacity: 0.8;
+  letter-spacing: 3px;
+}
+
+/* ===================== */
+/* 節點標記              */
+/* ===================== */
+.milestone {
+  position: absolute;
+  font-size: 0.75rem;
+  background: rgba(0, 229, 255, 0.1);
+  padding: 4px 8px;
+  border: 1px solid var(--hud-blue);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.m-start {
+  top: 20%;
+  left: -10px;
+}
+
+.m-end {
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ===================== */
+/* 差距提示區            */
+/* ===================== */
+.gap-alert {
+  margin-top: 50px;
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gap-alert h2 {
+  font-size: 1.6rem;
+  margin: 0;
+  color: var(--white);
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+/* ===================== */
+/* CTA 區                */
+/* ===================== */
+.cta-box {
+  margin-top: 40px;
+  padding: 25px;
+  background: var(--panel-bg);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 12px;
+
+  /* 呼吸燈效果 */
+  animation: breathe 3s infinite alternate ease-in-out;
+}
+
+@keyframes breathe {
+  from { box-shadow: 0 0 2px rgba(0, 229, 255, 0.2); }
+  to   { box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }
+}
+
+.qr-img {
+  width: 130px;
+  height: 130px;
+  background: #fff;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.qr-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cta-text {
+  color: var(--hud-blue);
+  font-weight: bold;
+  letter-spacing: 4px;
+  margin: 0;
+}
+
+/* ===================== */
+/* RWD                   */
+/* ===================== */
+@media (max-width: 480px) {
+  .gauge-wrapper {
+    width: 240px;
+    height: 240px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+  }
+
+  .current-amount {
+    font-size: 2rem;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <h1>白宮禮堂興建工程募款進度</h1>
+
+  <!-- 儀表板 -->
+  <section class="gauge-wrapper">
+    <svg class="gauge-svg" viewBox="0 0 200 200">
+      <circle class="gauge-track" cx="100" cy="100" r="90" />
+      <circle class="gauge-fill" cx="100" cy="100" r="90" />
+    </svg>
+
+    <div class="gauge-data">
+      <span class="current-amount">4,751,009 元</span>
+      <span class="label">當前籌款</span>
+    </div>
+
+    <div class="milestone m-start">1000萬 動工門檻</div>
+    <div class="milestone m-end">3000萬 完工目標</div>
+  </section>
+
+  <!-- 差距提示 -->
+  <section class="gap-alert">
+    <h2>距離動工還差 5,248,991 元</h2>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-box">
+<h4>打開銀行APP內部的掃碼功能，即可帶出白宮興建工程善款捐助基金郵局帳戶資訊喔!</h4>
+
+<div class="qr-img">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=TWQRP%3A%2F%2F700NTTransfer%2F158%2F02%2FV1%3FD6%3D0001913350007762%26D5%3D700%26D9%3D%E5%96%84%E6%AC%BE%E8%AB%8B%E5%89%8D%E8%B3%A2%E7%95%99%E4%B8%8B%E5%A7%93%E5%90%8D%26D10%3D901" alt="QR Code">
+</div>
