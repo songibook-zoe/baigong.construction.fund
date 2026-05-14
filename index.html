@@ -1,277 +1,755 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>募款進度</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="slides-format" content="viewport">
+    <title>台灣露營儲能電池市場報告 2025-2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-bg: #0d1117;
+            --color-bg-deep: #060a0f;
+            --color-surface: #161b22;
+            --color-text: #e6edf3;
+            --color-text-secondary: #8b949e;
+            --color-text-muted: #484f58;
+            --color-accent-1: #f0a500;
+            --color-accent-2: #ffd166;
+            --color-accent-3: #e05a1b;
+            --color-glass-bg: rgba(255,255,255,0.05);
+            --color-glass-border: rgba(255,255,255,0.08);
+            --color-vignette: rgba(0,0,0,0.5);
+            --font-display: 'Noto Serif TC', serif;
+            --font-body: 'Noto Sans TC', sans-serif;
+        }
+    </style>
+    <style>
+        :root {
+            --color-bg: #0d1117;
+            --color-text: #e6edf3;
+            --glow-color-rgb: 240,165,0;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { background: var(--color-bg); overflow: hidden; height: 100vh; width: 100vw; }
+        body { font-family: var(--font-body, 'Noto Sans TC', sans-serif); color: var(--color-text); }
+        .deck { width: 100vw; height: 100vh; position: relative; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.95); transition: opacity 0.7s ease, transform 0.7s ease; pointer-events: none; overflow: hidden; }
+        .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+        .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1100px; padding: clamp(1.2rem, 3vw, 3rem); }
+        .nav-controls { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; z-index: 100; background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 8px 22px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.08); }
+        .nav-btn { width: 36px; height: 36px; border: none; background: rgba(255,255,255,0.06); color: var(--color-accent-1); border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+        .nav-btn:hover { background: rgba(240,165,0,0.15); }
+        .slide-dots { display: flex; gap: 7px; }
+        .slide-dots .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.3s, transform 0.3s; }
+        .slide-dots .dot.active { background: var(--color-accent-1); transform: scale(1.3); }
+        .slide-counter { font-size: 0.75rem; color: rgba(255,255,255,0.35); min-width: 38px; text-align: center; font-family: 'Noto Sans TC', sans-serif; }
+        .reveal { opacity: 0; transform: translateY(18px); }
 
-<style>
-/* ===================== */
-/* 主題色系變數          */
-/* ===================== */
-:root {
-  --bg-dark: #020817;
-  --white: #ffffff;
-  --hud-blue: #00e5ff;
-  --gold: #ffcc00;
-  --panel-bg: rgba(3, 20, 40, 0.9);
+        /* Animated gradient bg */
+        @keyframes float-slow { 0%{transform:translate(0,0) scale(1)} 25%{transform:translate(50px,-40px) scale(1.1)} 50%{transform:translate(-35px,35px) scale(0.92)} 75%{transform:translate(45px,18px) scale(1.07)} 100%{transform:translate(0,0) scale(1)} }
+        @keyframes float-drift { 0%{transform:translate(0,0) scale(1) rotate(0deg)} 33%{transform:translate(-45px,-55px) scale(1.13) rotate(3deg)} 66%{transform:translate(38px,28px) scale(0.88) rotate(-2deg)} 100%{transform:translate(0,0) scale(1) rotate(0deg)} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+        .gradient-mesh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(80px); animation: float-slow 10s ease-in-out infinite; }
+        .blob:nth-child(2) { animation: float-drift 14s ease-in-out infinite; }
+        .blob:nth-child(3) { animation: float-slow 18s ease-in-out infinite reverse; }
+        .slide::before { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-repeat:repeat; background-size:256px 256px; opacity:0.03; mix-blend-mode:overlay; }
+        .slide::after { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse at center, transparent 50%, var(--color-vignette) 100%); }
 
-  /* 募款進度（可自行修改） */
-  --current: 4751009;
-  --target: 30000000;
+        /* glow */
+        .text-glow { text-shadow: 0 0 20px rgba(240,165,0,0.55), 0 0 40px rgba(240,165,0,0.2); }
+        .stat-glow { text-shadow: 0 0 28px rgba(240,165,0,0.65), 0 0 55px rgba(240,165,0,0.25); }
+        @keyframes glow-pulse { 0%,100%{text-shadow:0 0 20px rgba(240,165,0,0.5),0 0 40px rgba(240,165,0,0.2)} 50%{text-shadow:0 0 30px rgba(240,165,0,0.8),0 0 60px rgba(240,165,0,0.3)} }
+        .glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
 
-  /* 自動計算比例（CSS-only） */
-  --percent: calc(var(--current) / var(--target));
-  --dash: calc(565 * var(--percent));
-}
+        /* bar */
+        .bar-chart { display: flex; align-items: flex-end; gap: 0.5rem; height: 160px; }
+        .bar-col { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; flex: 1; }
+        .bar { border-radius: 5px 5px 0 0; width: 100%; }
+        .bar-fill { border-radius: 4px; height: 22px; }
 
-/* ===================== */
-/* 全域背景與排版        */
-/* ===================== */
-body {
-  background-color: var(--bg-dark);
-  color: var(--white);
-  font-family: 'PingFang TC', 'Heiti TC', sans-serif;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
+        /* scatter chart */
+        .scatter-wrapper { position: relative; width: 100%; }
+        .scatter-axis-y { position: absolute; left: 0; top: 0; bottom: 32px; width: 56px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; padding-right: 8px; }
+        .scatter-axis-x { position: absolute; bottom: 0; left: 56px; right: 0; display: flex; justify-content: space-between; }
+        .scatter-plot { margin-left: 56px; margin-bottom: 32px; position: relative; border-left: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .zone-line { position: absolute; border-top: 1px dashed rgba(255,255,255,0.12); width: 100%; }
+        .zone-vline { position: absolute; border-left: 1px dashed rgba(255,255,255,0.12); height: 100%; }
+        .dot-label { position: absolute; transform: translate(-50%, -50%); text-align: center; cursor: pointer; }
+        .dot-label:hover .dot-tip { display: block; }
+        .dot-tip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(13,17,23,0.95); border: 1px solid rgba(240,165,0,0.35); border-radius: 8px; padding: 6px 10px; width: 160px; z-index: 10; margin-bottom: 6px; font-size: 0.7rem; color: #e6edf3; white-space: normal; }
 
-  /* HUD 科技格線背景 */
-  background-image:
-    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
+        /* quadrant */
+        .quadrant { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .q-card { border-radius: 10px; padding: 14px 16px; border: 1px solid; }
 
-.container {
-  width: 100%;
-  max-width: 450px;
-  padding: 40px 20px;
-  box-sizing: border-box;
-  text-align: center;
-}
+        /* heatmap */
+        .hm-table { border-collapse: collapse; width: 100%; }
+        .hm-table th, .hm-table td { padding: 6px 8px; font-size: 0.7rem; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .hm-table th { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.45); font-weight: 500; }
 
-/* ===================== */
-/* 標題區                */
-/* ===================== */
-h1 {
-  font-size: 1.6rem;
-  letter-spacing: 2px;
-  color: var(--hud-blue);
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-  margin-bottom: 40px;
-  font-weight: bold;
-}
+        /* slide-specific */
+        .price-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+        .brand-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); transition: background 0.2s; }
+        .brand-row:hover { background: rgba(240,165,0,0.06); }
+        .section-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(240,165,0,0.7); font-weight: 600; margin-bottom: 0.5rem; font-family: 'Noto Sans TC', sans-serif; }
+        .divider-line { width: 48px; height: 3px; background: linear-gradient(90deg, var(--color-accent-1), transparent); border-radius: 2px; margin-bottom: 1rem; }
 
-/* ===================== */
-/* 儀表板區              */
-/* ===================== */
-.gauge-wrapper {
-  position: relative;
-  width: 300px;
-  height: 300px;
-  margin: 0 auto;
-}
-
-.gauge-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.gauge-track {
-  fill: none;
-  stroke: #0d2137;
-  stroke-width: 12;
-}
-
-.gauge-fill {
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 12;
-  stroke-linecap: round;
-
-  /* 自動計算進度條長度 */
-  stroke-dasharray: var(--dash) 565;
-
-  /* 光流效果 */
-  animation: glow-pulse 2s infinite alternate,
-             flow 4s linear infinite;
-}
-
-@keyframes glow-pulse {
-  from { opacity: 0.8; filter: drop-shadow(0 0 5px var(--gold)); }
-  to   { opacity: 1;   filter: drop-shadow(0 0 15px var(--gold)); }
-}
-
-@keyframes flow {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: -200; }
-}
-
-/* 中央數據 */
-.gauge-data {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.current-amount {
-  font-size: 2.4rem;
-  color: var(--gold);
-  font-weight: 900;
-  display: block;
-  text-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
-}
-
-.label {
-  font-size: 0.9rem;
-  color: var(--white);
-  opacity: 0.8;
-  letter-spacing: 3px;
-}
-
-/* ===================== */
-/* 節點標記              */
-/* ===================== */
-.milestone {
-  position: absolute;
-  font-size: 0.75rem;
-  background: rgba(0, 229, 255, 0.1);
-  padding: 4px 8px;
-  border: 1px solid var(--hud-blue);
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-.m-start {
-  top: 20%;
-  left: -10px;
-}
-
-.m-end {
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* ===================== */
-/* 差距提示區            */
-/* ===================== */
-.gap-alert {
-  margin-top: 50px;
-  padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.gap-alert h2 {
-  font-size: 1.6rem;
-  margin: 0;
-  color: var(--white);
-  font-weight: 700;
-  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
-}
-
-/* ===================== */
-/* CTA 區                */
-/* ===================== */
-.cta-box {
-  margin-top: 40px;
-  padding: 25px;
-  background: var(--panel-bg);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  border-radius: 12px;
-
-  /* 呼吸燈效果 */
-  animation: breathe 3s infinite alternate ease-in-out;
-}
-
-@keyframes breathe {
-  from { box-shadow: 0 0 2px rgba(0, 229, 255, 0.2); }
-  to   { box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }
-}
-
-.qr-img {
-  width: 130px;
-  height: 130px;
-  background: #fff;
-  margin: 0 auto 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: 6px;
-}
-
-.qr-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.cta-text {
-  color: var(--hud-blue);
-  font-weight: bold;
-  letter-spacing: 4px;
-  margin: 0;
-}
-
-/* ===================== */
-/* RWD                   */
-/* ===================== */
-@media (max-width: 480px) {
-  .gauge-wrapper {
-    width: 240px;
-    height: 240px;
-  }
-
-  h1 {
-    font-size: 1.3rem;
-    margin-bottom: 30px;
-  }
-
-  .current-amount {
-    font-size: 2rem;
-  }
-}
-</style>
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+        }
+    </style>
 </head>
-
 <body>
-<div class="container">
+<div class="mouse-spotlight" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+<div class="deck">
 
-  <h1>白宮禮堂興建工程募款進度</h1>
-
-  <!-- 儀表板 -->
-  <section class="gauge-wrapper">
-    <svg class="gauge-svg" viewBox="0 0 200 200">
-      <circle class="gauge-track" cx="100" cy="100" r="90" />
-      <circle class="gauge-fill" cx="100" cy="100" r="90" />
-    </svg>
-
-    <div class="gauge-data">
-      <span class="current-amount">4,751,009 元</span>
-      <span class="label">當前籌款</span>
+<!-- SLIDE 1: TITLE -->
+<div class="slide slide-1 active" data-slide="1">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:500px;height:500px;top:-120px;right:-100px;background:rgba(240,165,0,0.18);"></div>
+        <div class="blob" style="width:300px;height:300px;bottom:-80px;left:-60px;background:rgba(224,90,27,0.14);"></div>
+        <div class="blob" style="width:220px;height:220px;top:40%;left:12%;background:rgba(255,209,102,0.1);"></div>
     </div>
-
-    <div class="milestone m-start">1000萬 動工門檻</div>
-    <div class="milestone m-end">3000萬 完工目標</div>
-  </section>
-
-  <!-- 差距提示 -->
-  <section class="gap-alert">
-    <h2>距離動工還差 5,248,991 元</h2>
-  </section>
-
-  <!-- CTA -->
-  <section class="cta-box">
-<h4>打開銀行APP內部的掃碼功能，即可帶出白宮興建工程善款捐助基金郵局帳戶資訊喔!</h4>
-
-<div class="qr-img">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=TWQRP%3A%2F%2F700NTTransfer%2F158%2F02%2FV1%3FD6%3D0001913350007762%26D5%3D700%26D10%3D901" alt="QR Code">
+    <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="content text-center">
+        <div style="font-size:90px;margin-bottom:1rem;animation:float 3s ease-in-out infinite;" class="reveal">⚡</div>
+        <p class="section-label reveal" style="justify-content:center;display:block;">Market Intelligence Report</p>
+        <h1 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(2rem,5vw,3.8rem);font-weight:900;background:linear-gradient(135deg,#f0a500,#ffd166,#f0a500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.01em;line-height:1.2;margin-bottom:0.75rem;">台灣露營儲能電池<br>市場競爭分析</h1>
+        <p class="reveal" style="font-size:clamp(0.85rem,1.4vw,1.1rem);color:rgba(255,255,255,0.45);letter-spacing:0.18em;text-transform:uppercase;font-family:'Noto Sans TC',sans-serif;">2025 – 2026 十大品牌 · 市價尺規分佈</p>
+    </div>
 </div>
 
+<!-- SLIDE 2: EXECUTIVE SUMMARY -->
+<div class="slide slide-2" data-slide="2">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:350px;height:350px;top:-80px;right:-80px;background:rgba(240,165,0,0.09);"></div>
+        <div class="blob" style="width:250px;height:250px;bottom:-60px;left:-40px;background:rgba(224,90,27,0.07);"></div>
+    </div>
+    <div class="content">
+        <div class="section-label reveal">Executive Summary</div>
+        <div class="divider-line reveal"></div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;margin-bottom:1.4rem;line-height:1.3;">本報告核心洞察</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="brand-row reveal">
+                <span style="font-size:1.4rem;">📍</span>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;color:#e6edf3;margin-bottom:2px;">主流市場集中帶：NT$15,000 – NT$35,000 × 500–1500Wh</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);">EcoFlow、Jackery、BLUETTI、Shell、Acer 等多品牌重兵布局此區段</div>
+                </div>
+            </div>
+            <div class="brand-row reveal">
+                <span style="font-size:1.4rem;">🏆</span>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;color:#e6edf3;margin-bottom:2px;">EcoFlow 以技術溢價佔據高端：2kWh+ 機型售價 NT$40,000–60,000</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);">X-Stream 快充專利 + 完整生態系，單品毛利空間最高</div>
+                </div>
+            </div>
+            <div class="brand-row reveal">
+                <span style="font-size:1.4rem;">💡</span>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;color:#e6edf3;margin-bottom:2px;">性價比黑馬：BLUETTI EB70S（716Wh / NT$13,900）、AutoMaxx 低門檻切入</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);">磷酸鐵鋰電芯策略壓低成本，對中低預算露友極具吸引力</div>
+                </div>
+            </div>
+            <div class="brand-row reveal">
+                <span style="font-size:1.4rem;">⚠️</span>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;color:#e6edf3;margin-bottom:2px;">台灣本土品牌（AutoMaxx、Juz cool、emirai）主攻 NT$5,000 以下入門段</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);">容量偏小（&lt;300Wh）但具備本地維修、租借等差異化服務優勢</div>
+                </div>
+            </div>
+            <div class="brand-row reveal">
+                <span style="font-size:1.4rem;">🌿</span>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;color:#e6edf3;margin-bottom:2px;">PHILIPS 以品牌信任度快速滲透：積木式擴充設計，家庭露營圈高黏著度</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);">全台保固服務網絡為最大差異化護城河</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 3: MARKET SCATTER CHART -->
+<div class="slide slide-3" data-slide="3">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:300px;height:300px;top:-60px;right:-60px;background:rgba(240,165,0,0.07);"></div>
+        <div class="blob" style="width:200px;height:200px;bottom:-50px;left:-30px;background:rgba(224,90,27,0.06);"></div>
+    </div>
+    <div class="content">
+        <div class="section-label reveal">Market Positioning Map</div>
+        <div class="divider-line reveal"></div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.3rem,2.8vw,2rem);font-weight:700;margin-bottom:0.5rem;">市價尺規分佈圖</h2>
+        <p class="reveal" style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:0.8rem;">X 軸：台灣市售售價（元） ｜ Y 軸：電池容量（Wh） ｜ 懸停圓點查看機型資訊</p>
+        <!-- SCATTER PLOT -->
+        <div class="reveal scatter-wrapper" style="height:340px;">
+            <!-- Y AXIS LABELS -->
+            <div class="scatter-axis-y" style="font-size:0.65rem;color:rgba(255,255,255,0.35);">
+                <span>3000Wh</span>
+                <span style="color:rgba(240,165,0,0.8);font-weight:700;">2000Wh</span>
+                <span>1500Wh</span>
+                <span style="color:rgba(240,165,0,0.8);font-weight:700;">1000Wh</span>
+                <span>500Wh</span>
+                <span>0</span>
+            </div>
+            <!-- PLOT AREA -->
+            <div class="scatter-plot" style="height:308px;" id="scatterPlot">
+                <!-- Zone lines at 1000Wh and 2000Wh -->
+                <div class="zone-line" style="bottom:32.7%;border-color:rgba(240,165,0,0.3);border-top-width:1.5px;"></div>
+                <div class="zone-line" style="bottom:65.4%;border-color:rgba(240,165,0,0.3);border-top-width:1.5px;"></div>
+                <!-- Zone labels -->
+                <div style="position:absolute;left:4px;bottom:2%;font-size:0.58rem;color:rgba(255,255,255,0.2);">入門段 &lt;1000Wh</div>
+                <div style="position:absolute;left:4px;bottom:34%;font-size:0.58rem;color:rgba(255,255,255,0.2);">主流段 1000–2000Wh</div>
+                <div style="position:absolute;left:4px;bottom:66%;font-size:0.58rem;color:rgba(255,255,255,0.2);">旗艦段 &gt;2000Wh</div>
+                <!-- Vertical zone lines at 1萬, 2萬, 3萬, 4萬 -->
+                <div class="zone-vline" style="left:16.7%;border-color:rgba(255,255,255,0.08);"></div>
+                <div class="zone-vline" style="left:33.3%;border-color:rgba(255,255,255,0.08);"></div>
+                <div class="zone-vline" style="left:50%;border-color:rgba(255,255,255,0.08);"></div>
+                <div class="zone-vline" style="left:66.7%;border-color:rgba(255,255,255,0.08);"></div>
+                <!-- Dots: x=price(0-60000->0-100%), y=wh(0-3000->0-100%) -->
+                <!-- emirai EMR310: 200Wh, NT$6,880 -->
+                <div class="dot-label" style="left:11.5%;bottom:6.7%;">
+                    <div style="width:12px;height:12px;border-radius:50%;background:rgba(160,200,255,0.85);box-shadow:0 0 8px rgba(160,200,255,0.5);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">emirai</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">emirai EMR310</div>
+                        <div>容量：200 Wh</div><div>售價：NT$6,880</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">次世代觸控電站</div>
+                    </div>
+                </div>
+                <!-- Juz cool JC-30: 360Wh approx, NT$8,800 -->
+                <div class="dot-label" style="left:14.7%;bottom:12%;">
+                    <div style="width:12px;height:12px;border-radius:50%;background:rgba(80,220,160,0.85);box-shadow:0 0 8px rgba(80,220,160,0.5);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">Juz cool</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">Juz cool JC-30</div>
+                        <div>容量：約 360 Wh</div><div>售價：NT$8,800</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">露營冰箱高相容性</div>
+                    </div>
+                </div>
+                <!-- AutoMaxx UP-5HX: 201Wh, NT$3,980 -->
+                <div class="dot-label" style="left:6.6%;bottom:6.7%;">
+                    <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,140,60,0.85);box-shadow:0 0 8px rgba(255,140,60,0.5);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">AutoMaxx</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">AutoMaxx UP-5HX</div>
+                        <div>容量：201 Wh</div><div>售價：NT$3,980</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">本土品牌，支援租借</div>
+                    </div>
+                </div>
+                <!-- AutoMaxx UP-5HA: 518Wh, NT$9,800 -->
+                <div class="dot-label" style="left:16.3%;bottom:17.3%;">
+                    <div style="width:13px;height:13px;border-radius:50%;background:rgba(255,140,60,0.85);box-shadow:0 0 8px rgba(255,140,60,0.5);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">AutoMaxx HA</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">AutoMaxx UP-5HA</div>
+                        <div>容量：518 Wh</div><div>售價：NT$9,800</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">多合一功能機</div>
+                    </div>
+                </div>
+                <!-- PHILIPS DLP8093C: 512Wh, NT$18,900 -->
+                <div class="dot-label" style="left:31.5%;bottom:17.1%;">
+                    <div style="width:13px;height:13px;border-radius:50%;background:rgba(0,160,220,0.85);box-shadow:0 0 8px rgba(0,160,220,0.5);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">PHILIPS</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">PHILIPS DLP8093C</div>
+                        <div>容量：512 Wh</div><div>售價：NT$18,900</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">積木式擴充，全台保固</div>
+                    </div>
+                </div>
+                <!-- BLUETTI EB70S: 716Wh, NT$13,900 -->
+                <div class="dot-label" style="left:23.2%;bottom:23.9%;">
+                    <div style="width:14px;height:14px;border-radius:50%;background:rgba(120,220,100,0.9);box-shadow:0 0 9px rgba(120,220,100,0.55);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">BLUETTI EB70S</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">BLUETTI EB70S</div>
+                        <div>容量：716 Wh</div><div>售價：NT$13,900</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">磷酸鐵鋰，性價比極高</div>
+                    </div>
+                </div>
+                <!-- KOTSURU 8馬赫 1000W: 1036Wh, NT$45,900 -->
+                <div class="dot-label" style="left:76.5%;bottom:34.5%;">
+                    <div style="width:13px;height:13px;border-radius:50%;background:rgba(255,80,120,0.85);box-shadow:0 0 8px rgba(255,80,120,0.5);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">KOTSURU</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">KOTSURU 8馬赫 Pro</div>
+                        <div>容量：1036 Wh</div><div>售價：NT$45,900</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">高功率輸出，大螢幕顯示</div>
+                    </div>
+                </div>
+                <!-- EcoFlow DELTA 2: 1024Wh, NT$22,990 -->
+                <div class="dot-label" style="left:38.3%;bottom:34.1%;">
+                    <div style="width:16px;height:16px;border-radius:50%;background:rgba(240,165,0,0.9);box-shadow:0 0 12px rgba(240,165,0,0.6);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.6);margin-top:1px;white-space:nowrap;">EcoFlow D2</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">EcoFlow DELTA 2</div>
+                        <div>容量：1024 Wh</div><div>售價：NT$22,990</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">X-Stream 快充，1hr充飽</div>
+                    </div>
+                </div>
+                <!-- BLUETTI AC70P: 1024Wh, NT$21,900 -->
+                <div class="dot-label" style="left:36.5%;bottom:34.1%;">
+                    <div style="width:15px;height:15px;border-radius:50%;background:rgba(120,220,100,0.9);box-shadow:0 0 10px rgba(120,220,100,0.55);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">BLUETTI AC70P</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">BLUETTI AC70P</div>
+                        <div>容量：1024 Wh</div><div>售價：NT$21,900</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">磷酸鐵鋰，台灣熱銷款</div>
+                    </div>
+                </div>
+                <!-- Shell MP1000: 999Wh, NT$23,988 -->
+                <div class="dot-label" style="left:39.98%;bottom:33.3%;">
+                    <div style="width:13px;height:13px;border-radius:50%;background:rgba(255,220,0,0.9);box-shadow:0 0 8px rgba(255,220,0,0.5);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">Shell MP1000</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">Shell MP1000 大黃蜂</div>
+                        <div>容量：999 Wh</div><div>售價：NT$23,988</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">軍規防撞，高過載</div>
+                    </div>
+                </div>
+                <!-- Acer Power Bar 1024: 1024Wh, NT$23,800 -->
+                <div class="dot-label" style="left:39.7%;bottom:34.1%;">
+                    <div style="width:13px;height:13px;border-radius:50%;background:rgba(180,80,220,0.85);box-shadow:0 0 8px rgba(180,80,220,0.5);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">Acer PB</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">Acer Power Bar 1024</div>
+                        <div>容量：1024 Wh</div><div>售價：NT$23,800</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">台灣大廠，BMS管理系統</div>
+                    </div>
+                </div>
+                <!-- Jackery Explorer 1000 Plus: 1264Wh, NT$29,800 -->
+                <div class="dot-label" style="left:49.7%;bottom:42.1%;">
+                    <div style="width:15px;height:15px;border-radius:50%;background:rgba(255,120,40,0.9);box-shadow:0 0 10px rgba(255,120,40,0.55);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.6);margin-top:1px;white-space:nowrap;">Jackery 1000+</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">Jackery Explorer 1000 Plus</div>
+                        <div>容量：1264 Wh</div><div>售價：NT$29,800</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">美系大廠，太陽能搭配熱門</div>
+                    </div>
+                </div>
+                <!-- EcoFlow DELTA 2 Max: 2048Wh, NT$44,990 -->
+                <div class="dot-label" style="left:74.98%;bottom:68.3%;">
+                    <div style="width:18px;height:18px;border-radius:50%;background:rgba(240,165,0,0.95);box-shadow:0 0 14px rgba(240,165,0,0.7);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.6);margin-top:1px;white-space:nowrap;">EcoFlow D2 Max</div>
+                    <div class="dot-tip">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">EcoFlow DELTA 2 Max</div>
+                        <div>容量：2048 Wh</div><div>售價：NT$44,990</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">旗艦大容量，可擴充5kWh</div>
+                    </div>
+                </div>
+                <!-- Jackery Explorer 2000 Plus: 2042Wh, NT$59,800 -->
+                <div class="dot-label" style="left:99.7%;bottom:68.1%;">
+                    <div style="width:16px;height:16px;border-radius:50%;background:rgba(255,120,40,0.9);box-shadow:0 0 10px rgba(255,120,40,0.55);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">Jackery 2000+</div>
+                    <div class="dot-tip" style="left:auto;right:0;transform:none;">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">Jackery Explorer 2000 Plus</div>
+                        <div>容量：2042 Wh</div><div>售價：NT$59,800</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">頂級旗艦，太陽能套裝</div>
+                    </div>
+                </div>
+                <!-- EcoFlow DELTA 3 Max: 2048Wh, NT$54,900 -->
+                <div class="dot-label" style="left:91.5%;bottom:68.3%;">
+                    <div style="width:16px;height:16px;border-radius:50%;background:rgba(240,165,0,0.88);box-shadow:0 0 12px rgba(240,165,0,0.6);margin:auto;"></div>
+                    <div style="font-size:0.55rem;color:rgba(255,255,255,0.55);margin-top:1px;white-space:nowrap;">EcoFlow D3 Max</div>
+                    <div class="dot-tip" style="left:auto;right:0;transform:none;">
+                        <div style="color:#ffd166;font-weight:700;margin-bottom:3px;">EcoFlow DELTA 3 Max</div>
+                        <div>容量：2048 Wh</div><div>售價：NT$54,900</div><div style="color:rgba(255,255,255,0.5);margin-top:2px;">最新旗艦款，雙向快充</div>
+                    </div>
+                </div>
+            </div>
+            <!-- X AXIS LABELS -->
+            <div class="scatter-axis-x" style="font-size:0.6rem;color:rgba(255,255,255,0.35);padding-top:4px;">
+                <span style="color:rgba(240,165,0,0.7);font-weight:600;">1萬</span>
+                <span style="color:rgba(240,165,0,0.7);font-weight:600;">2萬</span>
+                <span style="color:rgba(240,165,0,0.7);font-weight:600;">3萬</span>
+                <span style="color:rgba(240,165,0,0.7);font-weight:600;">4萬</span>
+                <span>5萬+</span>
+            </div>
+        </div>
+        <!-- Legend -->
+        <div class="reveal" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(240,165,0,0.9);"></div>EcoFlow</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(255,120,40,0.9);"></div>Jackery</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(120,220,100,0.9);"></div>BLUETTI</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(0,160,220,0.85);"></div>PHILIPS</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(255,140,60,0.85);"></div>AutoMaxx</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(255,80,120,0.85);"></div>KOTSURU</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(255,220,0,0.9);"></div>Shell</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(180,80,220,0.85);"></div>Acer</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(80,220,160,0.85);"></div>Juz cool</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.45);"><div style="width:8px;height:8px;border-radius:50%;background:rgba(160,200,255,0.85);"></div>emirai</div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 4: BRAND HEATMAP -->
+<div class="slide slide-4" data-slide="4">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:300px;height:300px;top:-60px;right:-60px;background:rgba(240,165,0,0.07);"></div>
+        <div class="blob" style="width:200px;height:200px;bottom:-50px;left:-30px;background:rgba(224,90,27,0.06);"></div>
+    </div>
+    <div class="content">
+        <div class="section-label reveal">Brand Evaluation Matrix</div>
+        <div class="divider-line reveal"></div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.3rem,2.5vw,1.9rem);font-weight:700;margin-bottom:0.8rem;">十大品牌綜合評比矩陣</h2>
+        <div class="reveal" style="overflow-x:auto;">
+        <table class="hm-table" style="min-width:680px;">
+            <thead>
+                <tr>
+                    <th style="text-align:left;width:110px;padding:6px 8px;">品牌</th>
+                    <th>容量覆蓋</th>
+                    <th>性價比</th>
+                    <th>快充技術</th>
+                    <th>安全性</th>
+                    <th>售後服務</th>
+                    <th>太陽能擴充</th>
+                    <th>適合族群</th>
+                </tr>
+            </thead>
+            <tbody style="font-size:0.7rem;">
+                <tr>
+                    <td style="text-align:left;font-weight:600;color:#ffd166;">EcoFlow</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.5),rgba(34,197,94,0.2));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.5),rgba(34,197,94,0.2));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="color:rgba(255,255,255,0.55);">重度玩家・車宿族</td>
+                </tr>
+                <tr>
+                    <td style="text-align:left;font-weight:600;color:#ffd166;">Jackery</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.5),rgba(34,197,94,0.2));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.5),rgba(34,197,94,0.2));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="color:rgba(255,255,255,0.55);">野營·太陽能玩家</td>
+                </tr>
+                <tr>
+                    <td style="text-align:left;font-weight:600;color:#ffd166;">BLUETTI</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="color:rgba(255,255,255,0.55);">預算型露友・家用</td>
+                </tr>
+                <tr>
+                    <td style="text-align:left;font-weight:600;color:#ffd166;">PHILIPS</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="color:rgba(255,255,255,0.55);">家庭露營・新手</td>
+                </tr>
+                <tr>
+                    <td style="text-align:left;font-weight:600;color:#ffd166;">AutoMaxx</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(249,115,22,0.4),rgba(249,115,22,0.15));color:#e6edf3;font-weight:700;">★★☆☆☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.5),rgba(34,197,94,0.2));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(239,68,68,0.4),rgba(239,68,68,0.15));color:#e6edf3;font-weight:700;">★☆☆☆☆</td>
+                    <td style="color:rgba(255,255,255,0.55);">入門族・租借使用</td>
+                </tr>
+                <tr>
+                    <td style="text-align:left;font-weight:600;color:#ffd166;">Shell</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(249,115,22,0.4),rgba(249,115,22,0.15));color:#e6edf3;font-weight:700;">★★☆☆☆</td>
+                    <td style="color:rgba(255,255,255,0.55);">戶外探險・重度使用</td>
+                </tr>
+                <tr>
+                    <td style="text-align:left;font-weight:600;color:#ffd166;">Acer</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(132,204,22,0.45),rgba(132,204,22,0.18));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.5),rgba(34,197,94,0.2));color:#e6edf3;font-weight:700;">★★★★☆</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(34,197,94,0.6),rgba(34,197,94,0.25));color:#e6edf3;font-weight:700;">★★★★★</td>
+                    <td style="background:radial-gradient(circle at 35% 35%,rgba(250,204,21,0.45),rgba(250,204,21,0.15));color:#e6edf3;font-weight:700;">★★★☆☆</td>
+                    <td style="color:rgba(255,255,255,0.55);">台灣本土優先族群</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="reveal" style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.4);"><div style="width:10px;height:10px;border-radius:2px;background:rgba(34,197,94,0.5);"></div>優秀</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.4);"><div style="width:10px;height:10px;border-radius:2px;background:rgba(132,204,22,0.4);"></div>良好</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.4);"><div style="width:10px;height:10px;border-radius:2px;background:rgba(250,204,21,0.4);"></div>普通</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:0.65rem;color:rgba(255,255,255,0.4);"><div style="width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,0.4);"></div>待改善</div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 5: QUADRANT ANALYSIS -->
+<div class="slide slide-5" data-slide="5">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:320px;height:320px;top:-70px;right:-70px;background:rgba(240,165,0,0.08);"></div>
+        <div class="blob" style="width:220px;height:220px;bottom:-55px;left:-35px;background:rgba(224,90,27,0.07);"></div>
+    </div>
+    <div class="content">
+        <div class="section-label reveal">Strategic Quadrant Analysis</div>
+        <div class="divider-line reveal"></div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.3rem,2.5vw,1.9rem);font-weight:700;margin-bottom:1rem;">性價比 × 市場定位 四象限</h2>
+        <div class="quadrant reveal">
+            <!-- Q1: 高性價比 + 高容量 -->
+            <div class="q-card" style="background:rgba(34,197,94,0.07);border-color:rgba(34,197,94,0.2);">
+                <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(34,197,94,0.8);font-weight:700;margin-bottom:6px;">🏆 明星產品 — 高容量 × 高性價比</div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">BLUETTI AC70P</span>
+                        <span class="price-badge" style="background:rgba(34,197,94,0.15);color:rgba(34,197,94,0.9);">1024Wh / $21,900</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">BLUETTI EB70S</span>
+                        <span class="price-badge" style="background:rgba(34,197,94,0.15);color:rgba(34,197,94,0.9);">716Wh / $13,900</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">EcoFlow DELTA 2</span>
+                        <span class="price-badge" style="background:rgba(34,197,94,0.15);color:rgba(34,197,94,0.9);">1024Wh / $22,990</span>
+                    </div>
+                </div>
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:8px;">→ 首選推薦，CP值最高區段</div>
+            </div>
+            <!-- Q2: 低性價比 + 高容量 -->
+            <div class="q-card" style="background:rgba(240,165,0,0.06);border-color:rgba(240,165,0,0.2);">
+                <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(240,165,0,0.8);font-weight:700;margin-bottom:6px;">👑 溢價旗艦 — 高容量 × 高售價</div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">EcoFlow DELTA 2 Max</span>
+                        <span class="price-badge" style="background:rgba(240,165,0,0.15);color:rgba(240,165,0,0.9);">2048Wh / $44,990</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">Jackery Explorer 2000+</span>
+                        <span class="price-badge" style="background:rgba(240,165,0,0.15);color:rgba(240,165,0,0.9);">2042Wh / $59,800</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">KOTSURU 8馬赫 Pro</span>
+                        <span class="price-badge" style="background:rgba(240,165,0,0.15);color:rgba(240,165,0,0.9);">1036Wh / $45,900</span>
+                    </div>
+                </div>
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:8px;">→ 品牌溢價明顯，適合重度使用者</div>
+            </div>
+            <!-- Q3: 高性價比 + 低容量 -->
+            <div class="q-card" style="background:rgba(59,130,246,0.06);border-color:rgba(59,130,246,0.18);">
+                <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(100,170,255,0.8);font-weight:700;margin-bottom:6px;">🌱 入門優選 — 低容量 × 高性價比</div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">AutoMaxx UP-5HA</span>
+                        <span class="price-badge" style="background:rgba(59,130,246,0.15);color:rgba(100,170,255,0.9);">518Wh / $9,800</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">emirai EMR310</span>
+                        <span class="price-badge" style="background:rgba(59,130,246,0.15);color:rgba(100,170,255,0.9);">200Wh / $6,880</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">Juz cool JC-30</span>
+                        <span class="price-badge" style="background:rgba(59,130,246,0.15);color:rgba(100,170,255,0.9);">360Wh / $8,800</span>
+                    </div>
+                </div>
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:8px;">→ 入門嘗鮮首選，預算有限族群</div>
+            </div>
+            <!-- Q4: 低性價比 + 低容量 -->
+            <div class="q-card" style="background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.08);">
+                <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.45);font-weight:700;margin-bottom:6px;">🔄 差異化訴求 — 低容量 × 品牌溢價</div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">PHILIPS DLP8093C</span>
+                        <span class="price-badge" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);">512Wh / $18,900</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;font-size:0.82rem;">Shell MP1000</span>
+                        <span class="price-badge" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);">999Wh / $23,988</span>
+                    </div>
+                </div>
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:8px;">→ 靠服務/品牌力而非容量取勝</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 6: RECOMMENDATIONS -->
+<div class="slide slide-6" data-slide="6">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:380px;height:380px;top:-90px;right:-90px;background:rgba(240,165,0,0.11);"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-65px;left:-45px;background:rgba(224,90,27,0.09);"></div>
+        <div class="blob" style="width:180px;height:180px;top:35%;left:10%;background:rgba(255,209,102,0.07);"></div>
+    </div>
+    <div class="content">
+        <div class="section-label reveal">Strategic Recommendations</div>
+        <div class="divider-line reveal"></div>
+        <h2 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.3rem,2.8vw,2rem);font-weight:700;margin-bottom:1.1rem;">採購建議 — 依使用情境</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div class="reveal" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;">
+                <div style="font-size:1.8rem;margin-bottom:8px;">🏕️</div>
+                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(240,165,0,0.7);font-weight:700;margin-bottom:6px;">家庭露營</div>
+                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">BLUETTI AC70P</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:6px;">1024Wh · NT$21,900</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);line-height:1.5;">磷酸鐵鋰安全高壽命，性價比市場最強，適合 2-3 人帳篷週末露</div>
+            </div>
+            <div class="reveal" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;">
+                <div style="font-size:1.8rem;margin-bottom:8px;">🚗</div>
+                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(240,165,0,0.7);font-weight:700;margin-bottom:6px;">車宿族</div>
+                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">EcoFlow DELTA 2</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:6px;">1024Wh · NT$22,990</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);line-height:1.5;">X-Stream 快充 1 小時充飽，APP 智能監控，生態系擴充性最強</div>
+            </div>
+            <div class="reveal" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;">
+                <div style="font-size:1.8rem;margin-bottom:8px;">🔆</div>
+                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(240,165,0,0.7);font-weight:700;margin-bottom:6px;">太陽能搭配</div>
+                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">Jackery Explorer 1000+</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:6px;">1264Wh · NT$29,800</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);line-height:1.5;">SolarSaga 太陽能板生態系完整，野外自給自足最佳解決方案</div>
+            </div>
+            <div class="reveal" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;">
+                <div style="font-size:1.8rem;margin-bottom:8px;">👨‍👩‍👧</div>
+                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(240,165,0,0.7);font-weight:700;margin-bottom:6px;">初次入手</div>
+                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">PHILIPS DLP8093C</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:6px;">512Wh · NT$18,900</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);line-height:1.5;">全台授權維修，百年品牌信任度，積木擴充未來彈性大</div>
+            </div>
+            <div class="reveal" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;">
+                <div style="font-size:1.8rem;margin-bottom:8px;">🏔️</div>
+                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(240,165,0,0.7);font-weight:700;margin-bottom:6px;">極限戶外</div>
+                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">Shell MP1000 大黃蜂</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:6px;">999Wh · NT$23,988</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);line-height:1.5;">軍規防摔防撞外殼，惡劣環境耐用度最高，附 LED 照明功能</div>
+            </div>
+            <div class="reveal" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;">
+                <div style="font-size:1.8rem;margin-bottom:8px;">💰</div>
+                <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(240,165,0,0.7);font-weight:700;margin-bottom:6px;">最高旗艦</div>
+                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">EcoFlow DELTA 2 Max</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:6px;">2048Wh · NT$44,990</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);line-height:1.5;">可擴充至 5kWh，支援家庭停電備用，外露兩用頂配選擇</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 7: CLOSING -->
+<div class="slide slide-7" data-slide="7">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:500px;height:500px;top:-120px;right:-100px;background:rgba(240,165,0,0.16);"></div>
+        <div class="blob" style="width:300px;height:300px;bottom:-80px;left:-60px;background:rgba(224,90,27,0.12);"></div>
+        <div class="blob" style="width:220px;height:220px;top:40%;left:12%;background:rgba(255,209,102,0.09);"></div>
+    </div>
+    <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="content text-center">
+        <div class="reveal" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.18em;color:rgba(240,165,0,0.7);margin-bottom:0.8rem;font-family:'Noto Sans TC',sans-serif;">Market Intelligence · 2025–2026</div>
+        <h1 class="reveal" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.8rem,4.5vw,3.2rem);font-weight:900;background:linear-gradient(135deg,#f0a500,#ffd166,#f0a500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:1rem;line-height:1.25;">台灣露營儲能市場<br>正在快速起飛</div>
+        <p class="reveal" style="font-size:clamp(0.85rem,1.3vw,1rem);color:rgba(255,255,255,0.45);max-width:520px;margin:0 auto 1.4rem;line-height:1.7;">10 大品牌激烈競爭，主流市場已成型於 NT$15,000–35,000 × 500–1500Wh 帶，建議優先布局高性價比的明星產品象限，並關注本土品牌服務差異化機會。</p>
+        <div class="reveal" style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+                <div class="stat-glow" style="font-family:'Noto Serif TC',serif;font-size:2.2rem;font-weight:900;color:#f0a500;" data-count="10">0</div>
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">分析品牌</div>
+            </div>
+            <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+            <div style="text-align:center;">
+                <div class="stat-glow" style="font-family:'Noto Serif TC',serif;font-size:2.2rem;font-weight:900;color:#f0a500;" data-count="21">0</div>
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">代表機型</div>
+            </div>
+            <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+            <div style="text-align:center;">
+                <div class="stat-glow" style="font-family:'Noto Serif TC',serif;font-size:2.2rem;font-weight:900;color:#f0a500;">5萬+</div>
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">價格跨度(元)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- end deck -->
+
+<!-- NAVIGATION -->
+<div class="nav-controls">
+    <button class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
+    <div class="slide-dots" id="dots"></div>
+    <button class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
+    <span class="slide-counter" id="counter">1 / 7</span>
+</div>
+
+<div class="mouse-spotlight-overlay" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+
+<script>
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+    const dotsContainer = document.getElementById('dots');
+    const counter = document.getElementById('counter');
+    for (let i = 1; i <= total; i++) { const dot = document.createElement('div'); dot.className = 'dot' + (i === 1 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); }
+
+    function goToSlide(n) {
+        const prev = document.querySelector('.slide.active');
+        const next = document.querySelector('.slide[data-slide="' + n + '"]');
+        if (prev) prev.classList.remove('active');
+        if (next) { next.classList.add('active'); animateSlide(next); }
+        current = n; updateNav();
+    }
+    function changeSlide(dir) { let n = current + dir; if (n < 1) n = total; if (n > total) n = 1; goToSlide(n); }
+    function updateNav() { document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i+1 === current)); counter.textContent = current + ' / ' + total; }
+    document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); } });
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', e => { const d = touchStartX - e.changedTouches[0].clientX; if (Math.abs(d) > 50) changeSlide(d > 0 ? 1 : -1); });
+
+    function animateSlide(slide) {
+        slide.querySelectorAll('.reveal').forEach((el, i) => {
+            el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(18px)';
+            el.offsetHeight;
+            const delay = i * 0.08;
+            el.style.transition = 'opacity 0.4s ease ' + delay + 's, transform 0.4s ease ' + delay + 's';
+            el.style.opacity = '1'; el.style.transform = 'translateY(0)';
+        });
+        // counters
+        slide.querySelectorAll('[data-count]:not(.counted)').forEach(el => {
+            el.classList.add('counted');
+            const target = parseInt(el.dataset.count);
+            let cur = 0; const step = Math.max(1, Math.ceil(target / 40));
+            const timer = setInterval(() => { cur += step; if (cur >= target) { cur = target; clearInterval(timer); } el.textContent = cur; }, 30);
+        });
+        // bar fills
+        slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar, i) => {
+            bar.classList.add('fill-init'); bar.style.width = '0%';
+            bar.style.transition = 'width 0.6s ease ' + (i * 0.08) + 's'; bar.offsetHeight; bar.style.width = bar.dataset.width + '%';
+        });
+    }
+
+    // particles
+    window.initParticles = function(canvas, opts) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+        if (!canvas.width || !canvas.height) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        const count = opts.count || 50; let mx = -1000, my = -1000;
+        const particles = Array.from({length: count}, () => ({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+            vx: (Math.random()-.5)*0.3, vy: (Math.random()-.5)*0.3,
+            size: Math.random()*2.2+0.6, alpha: Math.random()*0.3+0.08
+        }));
+        if (opts.interactive !== false) {
+            canvas.addEventListener('mousemove', e => { const r = canvas.getBoundingClientRect(); mx = e.clientX-r.left; my = e.clientY-r.top; });
+            canvas.addEventListener('mouseleave', () => { mx=-1000; my=-1000; });
+        }
+        (function tick() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p => {
+                const dx=p.x-mx,dy=p.y-my,dist=Math.sqrt(dx*dx+dy*dy);
+                if(dist<100){const f=(100-dist)/100*1.8; p.vx+=(dx/dist)*f*0.08; p.vy+=(dy/dist)*f*0.08;}
+                p.vx*=0.98; p.vy*=0.98; p.x+=p.vx; p.y+=p.vy;
+                if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
+                if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
+                ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+                ctx.fillStyle='rgba(240,165,0,'+p.alpha+')'; ctx.fill();
+            });
+            requestAnimationFrame(tick);
+        })();
+    };
+    document.querySelectorAll('.particle-canvas').forEach(c => window.initParticles(c, {interactive:true,count:55}));
+
+    // mouse spotlight
+    document.addEventListener('mousemove', e => {
+        const s = document.querySelector('.mouse-spotlight-overlay');
+        if (s) s.style.background = 'radial-gradient(500px circle at '+e.clientX+'px '+e.clientY+'px, rgba(240,165,0,0.05), transparent 40%)';
+    });
+
+    // animate first slide
+    try { animateSlide(document.querySelector('.slide.active')); } catch(e) {}
+</script>
+</body>
+</html>
